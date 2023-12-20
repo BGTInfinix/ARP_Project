@@ -2,9 +2,7 @@
 Advanced Programming and Robotic Project
 
 # Assignment 1
-Team Name: WhereIsTheMarket?
-
-Team Members: Ewen Michel Claude Gay, Kohei Tateyama
+Team Member: Nabil Bentefrit
 
 ## Architecture Sketch
 
@@ -13,16 +11,7 @@ Team Members: Ewen Michel Claude Gay, Kohei Tateyama
 
 # Short definition of all Active Components
 
-There are 3 folders `build`, `include` and `src` as well as a makefile. The build folder holds all the compiled and executbale files that ar made by running the makefile. The `include` directory contains a header file `constants.h`. The `src` directory contains `drone.c`, `keyboardManager.c`, `master.c`, `server.c`, `watchdog.c` and `window.c`. 
-
-
-## constants.h
-
-The `constants.h` file defines various constants and parameters that are used through the program. 
-This includes, shared memory key, size and path, semaphore path, constants about the rows and columns of the window, values for the mass of the drone, the viscosity constant, the integration interval and the length of messages. 
-
-This header file is included in every .c file as to ensure that changes to these values can be easily managed and changed from a centralized location.
-
+There are 3 folders `build`, `include` and `src` as well as a makefile. The build folder holds all the compiled and executbale files that ar made by running the makefile. The `include` directory contains a header file `constants.h`. The `src` directory contains `drone.c`, `keyboardManager.c`, `master.c`, `server.c`, and `window.c`. 
 
 ## master.c
 
@@ -31,12 +20,6 @@ The `master.c` file is a component of the program responsible for forking the ot
 At the beginning of the file a `summon()` function is created that serves the purpose of executing other functions using `execvp()` and returning an error if it has failed. This will be used in a for loop that will iterate for the number of processes in the program. Each iteration a new child process is created using `fork()` which then calls for the `summon()` of each initialised argument representing all processes.
 
 Furthermore, the master file creates the file descriptors and pipes for the passing of data in between the processes. Lastly, a `for` loop is created to make the master terminate if any of the children are terminated. 
-
-
-## watchdog.c
-
-The `watchdog.c` file is resposnible for the monitoring (the 'health') and managaing of the other processes. It checks to see if the processes are running correctly. The program uses 'signals' and 'pipes' to carry out this task. Once it has received the ID of the processes, it sends signals to all processes and waits for a response. If the watchdog receives a signal back from a process, it resets the timer of that process. If the timer were to exceed a defined threshold, a signal would be sent to terminate all processes and exits. In all different files you will find elements that are related to the watchdog for this purpose.
-
 
 ## server.c
 
@@ -81,17 +64,16 @@ $ make
 to compile all the necessary files. And to run the project, enter:
 
 ```bash
-$ make run
+$ ./build/master
 ```
-This command will open 5 konsole windows `drone`, `keyboard`, `server`, `window`, and `watchdog`.
 
 ## Operational instructions
-In the 'window' konsole, there should be a drone displayed as 'X'. Use the keys 
+In the 'keyboard' konsole, there should be a drone displayed as 'X'. Use the keys 
 
-`w` `e` `r` &nbsp; &nbsp;    `u` `i` `o`     
+`w` `e` `r` &nbsp; &nbsp;        
 
-`s` `d` `f`  or              `j` `k` `l`     
+`s` `d` `f`  or                   
 
-`x` `c` `v` &nbsp; &nbsp;    `m` `,` `.`     
+`x` `c` `v` &nbsp; &nbsp;         
 
-to add velocity to the drone. Press it multiple times to make it move faster. To stop the drone immediately, press the keys `d` or `k`. And to terminate all processes, press `space` in the 'window', or close any of the processes.
+press Quit to quit the programm
