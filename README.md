@@ -6,7 +6,7 @@ Team Member: Nabil Bentefrit
 
 ## Architecture Sketch
 
-![Architecture sketch](https://github.com/kohei-tateyama/JEMARO/blob/master/ARP/Assignment1/resources/architecture2.jpg)
+![Architecture sketch]
 
 
 # Short definition of all Active Components
