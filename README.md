@@ -8,11 +8,6 @@ Team Member: Nabil Bentefrit
 
 ![Architecture sketch]
 
-
-# Short definition of all Active Components
-
-There are 3 folders `build`, `include` and `src` as well as a makefile. The build folder holds all the compiled and executbale files that ar made by running the makefile. The `include` directory contains a header file `constants.h`. The `src` directory contains `drone.c`, `keyboardManager.c`, `master.c`, `server.c`, and `window.c`. 
-
 ## master.c
 
 The `master.c` file is a component of the program responsible for forking the other processes. This allows for the execution of different components that include the server, the window, the keyboard manager, the drone and the watchdog in separate konsole windows. 
