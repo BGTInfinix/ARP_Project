@@ -4,10 +4,6 @@ Advanced Programming and Robotic Project
 # Assignment 1
 Team Member: Nabil Bentefrit
 
-## Architecture Sketch
-
-![Architecture sketch]
-
 ## master.c
 
 The `master.c` file is a component of the program responsible for forking the other processes. This allows for the execution of different components that include the server, the window, the keyboard manager, the drone and the watchdog in separate konsole windows. 
