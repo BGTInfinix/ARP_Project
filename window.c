@@ -15,6 +15,18 @@
 
 int isContinue = 1;
 
+static int isPositionReached(struct Coordinates DronePos, struct Coordinates ListPos[], int PosNumber)
+{
+    for (int i = 0; i < PosNumber; i++)
+    {
+        if ((DronePos.x == ListPos[i].x) && (DronePos.y == ListPos[i].y))
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void my_handler(int signum)
 {
     if (signum == SIGINT)
@@ -45,13 +57,14 @@ void ncursesSetup(WINDOW **display, WINDOW **score)
 }
 
 int main(int argc, char *argv[])
-{  
+{
     if (argc != 2)
     {
         return EXIT_FAILURE;
     }
-    
-    if ( signal(SIGINT, my_handler) == SIG_ERR) {
+
+    if (signal(SIGINT, my_handler) == SIG_ERR)
+    {
         printf("\ncan't catch SIGINT\n");
     }
     int pipeID1 = atoi(argv[1]);
@@ -59,7 +72,7 @@ int main(int argc, char *argv[])
     initscr();
 
     // refresh window
-    struct Coordinates coordinates;
+    struct Sender sender;
 
     // get the scale, to scale up the window to the desired size
     double scalex = (double)BOARD_SIZE / ((double)COLS * 0.98);
@@ -67,20 +80,63 @@ int main(int argc, char *argv[])
     WINDOW *win, *score;
     ncursesSetup(&win, &score);
     curs_set(0); // don't show cursor
+
+    struct Coordinates DronePos;
+    struct Coordinates ObstaclePos[MAX_OBSTACLE];
+    struct Coordinates TargetPos[MAX_TARGET];
+    int ObstacleNumber = 0;
+    int TargetNumber = 0;
+    int IndexTarget = 0;
+
     do
     {
-        ssize_t bytesRead = read(pipeID1, &coordinates, sizeof(coordinates));
-              
+        ssize_t bytesRead = read(pipeID1, &sender, sizeof(sender));
         werase(win);
         box(win, 0, 0);
         werase(score);
         box(score, 0, 0);
-        mvwprintw(win, (int) (coordinates.y / scaley), (int) (coordinates.x / scalex), "X");
-        //mvwprintw(win, coordinates.y, coordinates.x, "X");
-        mvwprintw(score, 1, 20, "%d,%d", coordinates.x, coordinates.y);
+
+        switch (sender.sender)
+        {
+        case DRONE:
+            DronePos.x = sender.coordinates.x;
+            DronePos.y = sender.coordinates.y;
+            if (isPositionReached(&DronePos, ObstaclePos, ObstacleNumber) == 1)
+            {
+            }
+            if ((DronePos.x == TargetPos[IndexTarget].x) && (DronePos.y == TargetPos[IndexTarget].y))
+            {
+                IndexTarget ++;
+            }
+            break;
+        case OBSTACLE:
+            ObstaclePos[ObstacleNumber].x = sender.coordinates.x;
+            ObstaclePos[ObstacleNumber].y = sender.coordinates.y;
+            ObstacleNumber++;
+            break;
+        case TARGET:
+            TargetPos[TargetNumber].x = sender.coordinates.x;
+            TargetPos[TargetNumber].y = sender.coordinates.y;
+            TargetNumber++;
+            break;
+        default:
+            break;
+        }
+        if (IndexTarget == TargetNumber) isContinue = 0;
+
+        mvwprintw(win, (int)(DronePos.y / scaley), (int)(DronePos.x / scalex), "X");
+        for (int i = 0; i < ObstacleNumber; i++)
+        {
+            mvwprintw(win, (int)(ObstaclePos[i].y / scaley), (int)(ObstaclePos[i].x / scalex), "-");
+        }
+        for (int i = 0; i < TargetNumber; i++)
+        {
+            mvwprintw(win, (int)(TargetPos[i].y / scaley), (int)(TargetPos[i].x / scalex), "%d", i+1);
+        }
+        mvwprintw(score, 1, 20, "%d,%d", DronePos.x, DronePos.y);
         wrefresh(win);
         wrefresh(score);
-    } while(isContinue);
+    } while (isContinue);
 
     close(pipeID1);
     delwin(win);

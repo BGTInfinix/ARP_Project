@@ -7,20 +7,20 @@
 #include <ctype.h>
 
 const int MAX_PIPES = 3;     // Number of pipes per process
-const int MAX_PROCESSES = 4; // Number of process runing in project
+const int MAX_PROCESSES = 6; // Number of process runing in project
 
-int GetPIDbyName(const char* pidName)
+int GetPIDbyName(const char *pidName)
 {
     FILE *fp;
-    char pidofCmd[50]={0};
-    int pidValue=-1;
-        
+    char pidofCmd[50] = {0};
+    int pidValue = -1;
+
     sprintf(pidofCmd, "pidof %s > /tmp/pidof", pidName);
-    system("pidof server > /tmp/pidof"); 
+    system("pidof server > /tmp/pidof");
     fp = fopen("/tmp/pidof", "r");
     fscanf(fp, "%d", &pidValue);
     fclose(fp);
-  
+
     return pidValue;
 }
 
@@ -96,7 +96,7 @@ int launchDrone(int pipes[][2], int pidServer)
         {
             close(pipes[i][0]);
         }
-        if ((i != 1) && (pipes[i][1] >= 0))
+        if ((i != 1) && (i != 2) && (pipes[i][1] >= 0))
         {
             close(pipes[i][1]);
         }
@@ -106,13 +106,55 @@ int launchDrone(int pipes[][2], int pidServer)
     char argument2[12];
     sprintf(argument2, "%d", pipes[1][1]);
     char argument3[12];
-    sprintf(argument3, "%d", pidServer);
+    sprintf(argument3, "%d", pipes[2][1]);
 
     // Launch process Drone
     char *argsWindow[] = {"konsole", "-e", "./build/drone", argument1, argument2, argument3, NULL};
     execvp("konsole", argsWindow);
 
     return EXIT_SUCCESS;
+}
+
+int launchObstacle(int pipes[][2])
+{
+    for (int i = 0; i < MAX_PIPES; i++)
+    {
+        if (pipes[i][0] >= 0)
+        {
+            close(pipes[i][0]);
+        }
+        if ((i != 1) && (i != 2) && (pipes[i][1] >= 0))
+        {
+            close(pipes[i][1]);
+        }
+    }
+    char argument1[12];
+    sprintf(argument1, "%d", pipes[1][1]);
+    char argument2[12];
+    sprintf(argument2, "%d", pipes[2][1]);
+    char *argsWindow[] = {"konsole", "-e", "./build/obstacle", argument1, argument2, NULL};
+    return execvp("konsole", argsWindow);
+}
+
+int launchTarget(int pipes[][2])
+{
+    for (int i = 0; i < MAX_PIPES; i++)
+    {
+        if (pipes[i][0] >= 0)
+        {
+            close(pipes[i][0]);
+        }
+        if ((i != 1) && (i != 2) && (pipes[i][1] >= 0))
+        {
+            close(pipes[i][1]);
+        }
+    }
+    char argument1[12];
+    sprintf(argument1, "%d", pipes[1][1]);
+    char argument2[12];
+    sprintf(argument2, "%d", pipes[2][1]);
+    char *argsWindow[] = {"konsole", "-e", "./build/target", argument1, argument2, NULL};
+    return execvp("konsole", argsWindow);
 }
 
 int launchBlackboard(int pipes[][2])
@@ -138,12 +180,24 @@ int launchBlackboard(int pipes[][2])
     return execvp("konsole", argsWindow);
 }
 
-int launchServer()
+int launchServer(int pipes[][2])
 {
     // Launch process Server (Shared Memory)
-    char *argsWindow[] = {"konsole", "-e", "./build/server", NULL};
-    execvp("konsole", argsWindow);
-    return EXIT_SUCCESS;
+    for (int i = 0; i < MAX_PIPES; i++)
+    {
+        if ((i != 2) && pipes[i][0] >= 0)
+        {
+            close(pipes[i][0]);
+        }
+        if (pipes[i][1] >= 0)
+        {
+            close(pipes[i][1]);
+        }
+    }
+    char argument[12];
+    sprintf(argument, "%d", pipes[2][0]);
+    char *argsWindow[] = {"konsole", "-e", "./build/server", argument, NULL};
+    return execvp("konsole", argsWindow);
 }
 
 int launchWatchDog(pid_t processes[], int numberOfProcesses)
@@ -166,16 +220,12 @@ int launchWatchDog(pid_t processes[], int numberOfProcesses)
         nextArgment++;
     }
     argsWindow[nextArgment] = NULL;
-
-    // 765 897 9881
-    // '7''6''5''\0''8''9''7''\0'
-
     return execvp("konsole", argsWindow);
 }
 
 int main(int argc, char **argv)
 {
-     int  pidServer;
+    int pidServer;
 
     int pipes[MAX_PIPES][2];
     pid_t processes[MAX_PROCESSES];
@@ -195,22 +245,25 @@ int main(int argc, char **argv)
             switch (i)
             {
             case 0: // logger server process
-                closePipes(pipes);
-                launchServer();
+                launchServer(pipes);
                 break;
             case 1: // Window Process
                 launchBlackboard(pipes);
                 break;
             case 2:
-               launchDrone(pipes, pidServer);
+                launchDrone(pipes, pidServer);
                 break;
-            case 3: // Keyboard process
-              launchKeyboard(pipes);
-               break;
-            case 4: // watchdog process, last one to be started
-             //   closePipes(pipes);
-             //   launchWatchDog(processes, i);
-                break;                
+            case 3:
+                launchObstacle(pipes);
+            case 4:
+                launchTarget(pipes);
+            case 5: // Keyboard process
+                launchKeyboard(pipes);
+                break;
+            case 6: // watchdog process, last one to be started
+                    //   closePipes(pipes);
+                    //   launchWatchDog(processes, i);
+                break;
             default:
                 break;
             }
@@ -232,30 +285,37 @@ int main(int argc, char **argv)
         }
     }
     closePipes(pipes);
-    do {
+    do
+    {
         printf("Press the Q key to Quit :");
         if (toupper(getchar()) == 'Q')
             break;
-    } while(1);
+    } while (1);
     stopProcess(processes, MAX_PROCESSES);
 
     pid_t pid;
     time_t t;
     int status;
-    do {
-        if ((pid = waitpid(-1, &status, WUNTRACED | WCONTINUED)) == -1) {
+    do
+    {
+        if ((pid = waitpid(-1, &status, WUNTRACED | WCONTINUED)) == -1)
+        {
             perror("wait() error");
         }
-        else if (pid == 0) {
+        else if (pid == 0)
+        {
             time(&t);
             printf("child is still running at %s", ctime(&t));
             sleep(1);
         }
-        else if (WIFEXITED(status)) {
+        else if (WIFEXITED(status))
+        {
             printf("child exited with status of %d pid=%d\n", WEXITSTATUS(status), pid);
-        } else {
+        }
+        else
+        {
             puts("child did not exit successfully");
         }
-  } while (pid == 0);
-  return ret;
+    } while (pid == 0);
+    return ret;
 }

@@ -1,5 +1,5 @@
 # INC=-I headers
-all:  master server drone keyboard window watchdog 
+all:  master server drone keyboard window watchdog obstacle target 
 
 # clean:
 # 	rm build/*
@@ -12,6 +12,12 @@ server:
 
 drone: 
 	gcc drone.c -o build/drone 
+
+obstacle: 
+	gcc obstacle.c -o build/obstacle 
+
+target: 
+	gcc target.c -o build/target 
 
 keyboard: 
 	gcc keyboardManager.c -o build/keyboard 
