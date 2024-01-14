@@ -11,13 +11,17 @@
 #define T 1
 
 #define BOARD_SIZE 100
+#define MAX_OBSTACLE 10
+#define MAX_TARGET 10
+
+#define DRONE 'D'
+#define OBSTACLE 'O'
+#define TARGET 'T'
 
 struct Coordinates
 {
     int x;
     int y;
-    int forcex;
-    int forcey;
 };
 
 struct Forces
