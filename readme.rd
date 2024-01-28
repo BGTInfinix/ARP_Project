@@ -39,8 +39,7 @@ The project comprises the following processes:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/NabBen/ARP.git
-   cd Assignment2
+   git clone https://github.com/BGTInfinix/ARP_Project
 
 2. Compile the project:
    ```bash
