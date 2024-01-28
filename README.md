@@ -49,6 +49,6 @@ The project comprises the following processes:
    ```bash
    ./build/master
 
-## Terminated the System
+## Terminating the System
 
 - To exit the program, press 'Q' key when prompted
