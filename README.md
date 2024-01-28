@@ -38,8 +38,8 @@ The project comprises the following processes:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your/repository.git
-   cd repository
+   git clone https://github.com/NabBen/ARP.git
+   cd Assignment2
 
 2. Compile the project:
    ```bash
