@@ -1,4 +1,4 @@
-# Project Name
+# Assignment 2 Nabil Bentefrit
 
 This project is a multi-process system designed to simulate a drone control system. It consists of several independent processes, each representing a different aspect of the drone control system. The processes communicate with each other using inter-process communication (IPC) mechanisms like pipes.
 
