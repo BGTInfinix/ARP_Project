@@ -50,6 +50,15 @@ The project comprises the following processes:
    ```bash
    ./build/master
 
+## Commands
+In the 'keyboard' konsole, use the keys:  
+
+`w` `e` `r` &nbsp; &nbsp;    `7` `8` `9`     
+
+`s` `d` `f`  or              `4` `5` `6`     
+
+`x` `c` `v` &nbsp; &nbsp;    `1` `2` `3`   
+
 ## Terminating the System
 
 - To exit the program, press 'Q' key when prompted
