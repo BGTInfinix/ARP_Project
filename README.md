@@ -12,20 +12,21 @@ This project is a multi-process system designed to simulate a drone control syst
 ## Introduction
 
 The project comprises the following processes:
-- **Server:** Manages shared memory for communication.
-- **Window:** Displays information using shared memory.
-- **Drone:** Simulates the drone's behavior.
-- **Obstacle:** Simulates obstacles in the drone's path.
+- **Master:** Manages pipes for communication and at the same time it's working as a watchdog.
+- **Server:** Prints information on Server console.
+- **Window:** Displays the drone's movements, obstacles and targets. In the same time, you can see the location of the drone
+- **Drone:** Simulates the drone's behavior and calcule the drone position depending on the obstacles.
+- **Obstacle:** Simulates obstacles on the map.
 - **Target:** Represents the target destination for the drone.
 - **Keyboard:** Accepts keyboard input for controlling the drone.
 
 ## Features
 
 - Multi-process system with independent components.
-- Inter-process communication using pipes and shared memory.
+- Inter-process communication using pipes only.
 - Simulated drone movement and obstacle avoidance.
-- User interaction through keyboard input.
-- Watchdog process to monitor the health of other processes.
+- User interaction through keyboard input in keyboard window !!
+- Watchdog process to monitor the health of other processes which is working in master.
 
 ## Prerequisites
 
