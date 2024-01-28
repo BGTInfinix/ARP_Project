@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <wait.h>
-
 #include "include/constants.h"
 
 int isContinue = 1;
@@ -22,15 +21,16 @@ void my_handler(int signum)
 
 int main(int argc, char **argv)
 {
-    if (argc != 3)
+    if (argc != 4)
     {
         return EXIT_FAILURE;
     }
     int pipeID1 = atoi(argv[1]);
     int pipeID2 = atoi(argv[2]);
+    int pipeID3 = atoi(argv[3]);
 
     struct Sender sender;
-    sender.sender = OBSTACLE;
+    sender.source = OBSTACLE;
 
     srand(time(NULL));
 
@@ -50,10 +50,18 @@ int main(int argc, char **argv)
             int numberOfObstacles = rand() % 5 + 5;
             for (int i = 0; i < numberOfObstacles; i++)
             {
-                sender.coordinates.x = rand() % BOARD_SIZE;
-                sender.coordinates.y = rand() % BOARD_SIZE;
-                write(pipeID1, &sender, sizeof(sender));
-                write(pipeID2, &sender, sizeof(sender));
+                sender.coordinates.x = rand() % (BOARD_SIZE - 30);
+                sender.coordinates.y = rand() % (BOARD_SIZE - 30);
+                if ((sender.coordinates.x == BOARD_SIZE / 2) && (sender.coordinates.y == BOARD_SIZE / 2))
+                {
+                    i--; // In case Obstacles coordinates are equal to drone initial position
+                }
+                else
+                {
+                    write(pipeID1, &sender, sizeof(sender));
+                    write(pipeID2, &sender, sizeof(sender));
+                    write(pipeID3, &sender, sizeof(sender));
+                }
             }
         }
         pause();

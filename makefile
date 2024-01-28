@@ -11,7 +11,7 @@ server:
 	gcc server.c -o build/server 
 
 drone: 
-	gcc drone.c -o build/drone 
+	gcc drone.c -o build/drone -lm
 
 obstacle: 
 	gcc obstacle.c -o build/obstacle 

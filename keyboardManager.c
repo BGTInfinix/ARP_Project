@@ -3,7 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <termios.h> //termios, TCSANOW, ECHO, ICANON
+#include <termios.h>
 #include "include/constants.h"
 
 int main(int argc, char *argv[])
@@ -16,14 +16,17 @@ int main(int argc, char *argv[])
     }
     // PIPE
     int pipeID = atoi(argv[1]);
+    struct Sender sender;
+    sender.source = KEYBOARD;
+
     static struct termios oldTermios, newTermios;
     tcgetattr(STDIN_FILENO, &oldTermios);
     newTermios = oldTermios;
     cfmakeraw(&newTermios);
     tcsetattr(STDIN_FILENO, TCSANOW, &newTermios);
-
     static struct termios oldt, newt;
     int isContinue = 1;
+
     int isWrite = 1;
     char direction;
     do
@@ -34,45 +37,49 @@ int main(int argc, char *argv[])
         case ' ': // enter space to exit
             isContinue = isWrite = 0;
             break;
-        // RIGHT
-        case 'o':
-        case 'r':
+
+        case '8': // up
+        case 'e':
             direction = '0';
             break;
-        case 'l':
-        case 'f':
+
+        case '9':
+        case 'r': // up - right
             direction = '1';
             break;
 
-        case '.':
-        case 'v':
+        case '6':
+        case 'f': // right
             direction = '2';
             break;
 
-        // LEFT
-        case 'u':
-        case 'w':
+        case '3':
+        case 'v': // bot - right
             direction = '3';
             break;
-        case 'j':
-        case 's':
+
+        case '2':
+        case 'c': // bot
             direction = '4';
             break;
-        case 'm':
-        case 'x':
+
+        case '1':
+        case 'x': // bot - left
             direction = '5';
             break;
 
-        // UP
-        case 'i':
-        case 'e':
+        case '4':
+        case 's': // left
             direction = '6';
             break;
 
-        // DOWN
-        case ',':
-        case 'c':
+        case '7':
+        case 'w': // top - left
             direction = '7';
+            break;
+        case '5':
+        case 'd':
+            direction = '8'; //stop
             break;
 
         default:
@@ -82,8 +89,9 @@ int main(int argc, char *argv[])
 
         if (isWrite)
         {
+            sender.coordinates.x = sender.coordinates.y = direction;
             // Send the command force to drone.c
-            int ret = write(pipeID, &direction, sizeof(char));
+            int ret = write(pipeID, &sender, sizeof(sender));
 
             if (ret < 0)
             {

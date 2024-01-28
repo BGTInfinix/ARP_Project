@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     int pipeID2 = atoi(argv[2]);
 
     struct Sender sender;
-    sender.sender = TARGET;
+    sender.source = TARGET;
 
     srand(time(NULL));
 
@@ -52,10 +52,17 @@ int main(int argc, char **argv)
             int numberOfTarget = rand() % 5 + 5;
             for (int i = 0; i < numberOfTarget; i++)
             {
-                sender.coordinates.x = rand() % BOARD_SIZE;
-                sender.coordinates.y = rand() % BOARD_SIZE;
-                write(pipeID1, &sender, sizeof(sender));
-                write(pipeID2, &sender, sizeof(sender));
+                sender.coordinates.x = rand() % (BOARD_SIZE - 30);
+                sender.coordinates.y = rand() % (BOARD_SIZE - 30);
+                if ((sender.coordinates.x == BOARD_SIZE / 2) && (sender.coordinates.y == BOARD_SIZE / 2))
+                {
+                    i--; // In case Target coordinates are equal to drone initial position
+                }
+                else
+                {
+                    write(pipeID1, &sender, sizeof(sender));
+                    write(pipeID2, &sender, sizeof(sender));
+                }
             }
         }
         pause();

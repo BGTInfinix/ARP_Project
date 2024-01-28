@@ -5,8 +5,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
-#include "include/constants.h"
 #include <signal.h>
+#include "include/constants.h"
 
 int isContinue = 1;
 
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
         ssize_t bytesRead = read(pipeID1, &sender, sizeof(sender));
         if (bytesRead == sizeof(sender))
         {
-            printf("[%c] (%d, %d)\n", sender.sender, sender.coordinates.x, sender.coordinates.y);
+            printf("[%c] (%d, %d)\n", sender.source, sender.coordinates.x, sender.coordinates.y);
         }
     } while (isContinue);
     return 0;

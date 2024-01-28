@@ -3,7 +3,6 @@
 #include <sys/shm.h>
 #include <unistd.h>
 #include <string.h>
-#include "include/constants.h"
 #include <fcntl.h>
 #include <stdlib.h>
 #include <semaphore.h>
@@ -12,19 +11,21 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <signal.h>
+#include "include/constants.h"
+#include "include/logfile.c"
 
 int isContinue = 1;
 
-static int isPositionReached(struct Coordinates DronePos, struct Coordinates ListPos[], int PosNumber)
+static int isPositionReached(struct Coordinates *DronePos, struct Coordinates ListPos[], int numberOfObjects)
 {
-    for (int i = 0; i < PosNumber; i++)
+    for (int i = 0; i < numberOfObjects; i++)
     {
-        if ((DronePos.x == ListPos[i].x) && (DronePos.y == ListPos[i].y))
+        if ((abs(DronePos->x - ListPos[i].x) < THRESHOLD) && (abs(DronePos->y - ListPos[i].y) < THRESHOLD))
         {
-            return 1;
+            return i;
         }
     }
-    return 0;
+    return -1;
 }
 
 void my_handler(int signum)
@@ -84,9 +85,13 @@ int main(int argc, char *argv[])
     struct Coordinates DronePos;
     struct Coordinates ObstaclePos[MAX_OBSTACLE];
     struct Coordinates TargetPos[MAX_TARGET];
-    int ObstacleNumber = 0;
-    int TargetNumber = 0;
-    int IndexTarget = 0;
+
+    int indexOfTargetReached = -1;
+    int numberOfObstacles = 0;
+    int numberOfTargets = 0;
+    int isOneTargetReceived = 0;
+    int indexTargetToReach = 0;
+    int isObstacleReach = 0;
 
     do
     {
@@ -96,42 +101,61 @@ int main(int argc, char *argv[])
         werase(score);
         box(score, 0, 0);
 
-        switch (sender.sender)
+        switch (sender.source)
         {
         case DRONE:
             DronePos.x = sender.coordinates.x;
             DronePos.y = sender.coordinates.y;
-            if (isPositionReached(&DronePos, ObstaclePos, ObstacleNumber) == 1)
+            indexOfTargetReached = isPositionReached(&DronePos, TargetPos, numberOfTargets);
+            if (indexOfTargetReached == indexTargetToReach)
             {
-            }
-            if ((DronePos.x == TargetPos[IndexTarget].x) && (DronePos.y == TargetPos[IndexTarget].y))
-            {
-                IndexTarget ++;
+                numberOfTargets--;
+                if (indexOfTargetReached != numberOfTargets)
+                {
+                    for (int i = indexTargetToReach; i < numberOfTargets; i++)
+                        TargetPos[i] = TargetPos[i + 1];
+                }
+                indexTargetToReach = 0;
+                writeToLogFile(logpath, "A TARGET HAS BEEN REACHED", "WINDOW");
             }
             break;
         case OBSTACLE:
-            ObstaclePos[ObstacleNumber].x = sender.coordinates.x;
-            ObstaclePos[ObstacleNumber].y = sender.coordinates.y;
-            ObstacleNumber++;
+            if (numberOfObstacles < MAX_OBSTACLE)
+            {
+                ObstaclePos[numberOfObstacles].x = sender.coordinates.x;
+                ObstaclePos[numberOfObstacles].y = sender.coordinates.y;
+                numberOfObstacles++;
+            }
+            writeToLogFile(logpath, "A OBSTACLE HAS BEEN PRINTED", "WINDOW");
             break;
         case TARGET:
-            TargetPos[TargetNumber].x = sender.coordinates.x;
-            TargetPos[TargetNumber].y = sender.coordinates.y;
-            TargetNumber++;
+            isOneTargetReceived = 1;
+            if (numberOfTargets < MAX_TARGET)
+            {
+                TargetPos[numberOfTargets].x = sender.coordinates.x;
+                TargetPos[numberOfTargets].y = sender.coordinates.y;
+                numberOfTargets++;
+            }
+            writeToLogFile(logpath, "A TARGET HAS BEEN PRINTED", "WINDOW");
             break;
         default:
             break;
         }
-        if (IndexTarget == TargetNumber) isContinue = 0;
+        
+        if (isOneTargetReceived && (numberOfTargets == 0))
+        {
+            writeToLogFile(logpath, "END OF THE GAME", "WINDOW");
+            isContinue = 0;
+        }
 
         mvwprintw(win, (int)(DronePos.y / scaley), (int)(DronePos.x / scalex), "X");
-        for (int i = 0; i < ObstacleNumber; i++)
+        for (int i = 0; i < numberOfObstacles; i++)
         {
-            mvwprintw(win, (int)(ObstaclePos[i].y / scaley), (int)(ObstaclePos[i].x / scalex), "-");
+            mvwprintw(win, (int)(ObstaclePos[i].y / scaley), (int)(ObstaclePos[i].x / scalex), "/");
         }
-        for (int i = 0; i < TargetNumber; i++)
+        for (int i = 0; i < numberOfTargets; i++)
         {
-            mvwprintw(win, (int)(TargetPos[i].y / scaley), (int)(TargetPos[i].x / scalex), "%d", i+1);
+            mvwprintw(win, (int)(TargetPos[i].y / scaley), (int)(TargetPos[i].x / scalex), "%d", i + 1);
         }
         mvwprintw(score, 1, 20, "%d,%d", DronePos.x, DronePos.y);
         wrefresh(win);

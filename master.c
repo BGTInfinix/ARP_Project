@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <time.h>
 #include <ctype.h>
+#include "include/constants.h"
+#include "include/logfile.c"
 
 const int MAX_PIPES = 3;     // Number of pipes per process
 const int MAX_PROCESSES = 6; // Number of process runing in project
@@ -88,7 +90,7 @@ int launchKeyboard(int pipes[][2])
     return EXIT_SUCCESS;
 }
 
-int launchDrone(int pipes[][2], int pidServer)
+int launchDrone(int pipes[][2])
 {
     for (int i = 0; i < MAX_PIPES; i++)
     {
@@ -123,7 +125,7 @@ int launchObstacle(int pipes[][2])
         {
             close(pipes[i][0]);
         }
-        if ((i != 1) && (i != 2) && (pipes[i][1] >= 0))
+        if ((i != 1) && (i != 2) && (i != 0) && (pipes[i][1] >= 0))
         {
             close(pipes[i][1]);
         }
@@ -132,7 +134,9 @@ int launchObstacle(int pipes[][2])
     sprintf(argument1, "%d", pipes[1][1]);
     char argument2[12];
     sprintf(argument2, "%d", pipes[2][1]);
-    char *argsWindow[] = {"konsole", "-e", "./build/obstacle", argument1, argument2, NULL};
+    char argument3[12];
+    sprintf(argument3, "%d", pipes[0][1]);
+    char *argsWindow[] = {"konsole", "-e", "./build/obstacle", argument1, argument2, argument3, NULL};
     return execvp("konsole", argsWindow);
 }
 
@@ -208,15 +212,15 @@ int launchWatchDog(pid_t processes[], int numberOfProcesses)
     argsWindow[0] = "konsole";
     argsWindow[1] = "-e";
     argsWindow[2] = "./build/watchdog";
-    int totallength = 0;
+    int totalLength = 0;
     int nextArgment = 3;
     char buffer[64];
 
     for (int i = 0; i < numberOfProcesses; i++)
     {
-        int j = sprintf(&buffer[totallength], "%d", processes[i]);
-        argsWindow[nextArgment] = &buffer[totallength];
-        totallength += j + 1;
+        int j = sprintf(&buffer[totalLength], "%d", processes[i]);
+        argsWindow[nextArgment] = &buffer[totalLength];
+        totalLength += j + 1;
         nextArgment++;
     }
     argsWindow[nextArgment] = NULL;
@@ -225,8 +229,6 @@ int launchWatchDog(pid_t processes[], int numberOfProcesses)
 
 int main(int argc, char **argv)
 {
-    int pidServer;
-
     int pipes[MAX_PIPES][2];
     pid_t processes[MAX_PROCESSES];
 
@@ -234,8 +236,8 @@ int main(int argc, char **argv)
     {
         return EXIT_FAILURE;
     }
-
     int ret = EXIT_SUCCESS;
+    clearLogFile(logpath);
     for (int i = 0; i < MAX_PROCESSES; i++)
     {
         processes[i] = fork();
@@ -250,12 +252,12 @@ int main(int argc, char **argv)
             case 1: // Window Process
                 launchBlackboard(pipes);
                 break;
-            case 2:
-                launchDrone(pipes, pidServer);
+            case 2: // Drone Process
+                launchDrone(pipes);
                 break;
-            case 3:
+            case 3: // Obstacle Process
                 launchObstacle(pipes);
-            case 4:
+            case 4: // Target Process
                 launchTarget(pipes);
             case 5: // Keyboard process
                 launchKeyboard(pipes);
@@ -275,14 +277,7 @@ int main(int argc, char **argv)
             ret = EXIT_FAILURE;
         }
         else
-        {
-            if (i == 0)
-            {
-                sleep(2);
-                pidServer = GetPIDbyName("server");
-                printf("True pidServer=%d i=%d \n", pidServer, i);
-            }
-        }
+            sleep(1);
     }
     closePipes(pipes);
     do
