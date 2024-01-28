@@ -7,7 +7,6 @@ This project is a multi-process system designed to simulate a drone control syst
 - [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
-- [Usage](#usage)
 - [Terminating the System](#terminating-the-system)
 
 ## Introduction
@@ -49,3 +48,7 @@ The project comprises the following processes:
 3. Run the project: 
    ```bash
    ./build/master
+
+## Terminated the System
+
+- To exit the program, press 'Q' key when prompted
