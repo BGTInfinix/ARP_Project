@@ -40,8 +40,12 @@ The project comprises the following processes:
 
    ```bash
    git clone https://github.com/your/repository.git
-   cd repository```
+   cd repository
 
 2. Compile the project:
    ```bash
-   make```
+   make
+   
+3. Run the project: 
+   ```bash
+   ./build/master
