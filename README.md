@@ -13,7 +13,7 @@ This project is a multi-process system designed to simulate a drone control syst
 
 The project comprises the following processes:
 - **Master:** Manages pipes for communication and at the same time it's working as a watchdog.
-- **Server:** Prints information on Server console.
+- **Server:** Server management information on Server console.
 - **Window:** Displays the drone's movements, obstacles and targets. In the same time, you can see the location of the drone
 - **Drone:** Simulates the drone's behavior and calcule the drone position depending on the obstacles.
 - **Obstacle:** Simulates obstacles on the map.
@@ -40,7 +40,7 @@ The project comprises the following processes:
 
    ```bash
    git clone https://github.com/NabBen/ARP.git
-   cd Assignment2
+   cd Assignment3
 
 2. Compile the project:
    ```bash
@@ -48,7 +48,8 @@ The project comprises the following processes:
    
 3. Run the project: 
    ```bash
-   ./build/master
+   ./build/master server hostname port
+   ./build/master client port
 
 ## Commands
 In the 'keyboard' konsole, use the keys:  
@@ -57,7 +58,10 @@ In the 'keyboard' konsole, use the keys:
 
 `s` `d` `f`  or              `4` `5` `6`     
 
-`x` `c` `v` &nbsp; &nbsp;    `1` `2` `3`   
+`x` `c` `v` &nbsp; &nbsp;    `1` `2` `3`  
+
+`p` : to reset game after end of the game
+` ` : to send "stop" to every process
 
 ## Terminating the System
 
